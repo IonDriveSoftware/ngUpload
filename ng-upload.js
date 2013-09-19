@@ -6,9 +6,9 @@
 //
 // <div ng-app="app">
 //   <div ng-controller="mainCtrl">
-//    <form action="/uploads" ng-upload> 
+//    <form action="/uploads" ng-upload>
 //      <input type="file" name="avatar"></input>
-//      <input type="submit" value="Upload" 
+//      <input type="submit" value="Upload"
 //         upload-submit="submited(content, completed)"></input>
 //    </form>
 //  </div>
@@ -20,7 +20,7 @@
 //        if (completed) {
 //          console.log(content);
 //        }
-//      }  
+//      }
 //  });
 //
 angular.module('ngUpload', [])
@@ -87,7 +87,7 @@ angular.module('ngUpload', [])
 
                     // attach function to load event of the iframe
                     iframe.bind('load', function () {
-                        // get content using native DOM. use of jQuery to retrieve content triggers IE bug 
+                        // get content using native DOM. use of jQuery to retrieve content triggers IE bug
                         // http://bugs.jquery.com/ticket/13936
                         var nativeIframe = iframe[0];
                         var iFrameDoc = nativeIframe.contentDocument || nativeIframe.contentWindow.document;
@@ -149,7 +149,7 @@ angular.module('ngUpload', [])
             }
         };
     }])
-    .directive('ngUpload', ['$parse', '$document', function ($parse, $document) {
+    .directive('ngUpload', ['$parse', '$document', '$browser', function ($parse, $document, $browser) {
         // Utility function to get meta tag with a given name attribute
         function getMetaTagWithName(name) {
             var head = $document.find('head');
@@ -183,9 +183,16 @@ angular.module('ngUpload', [])
 
                 element.attr("target", "upload_iframe");
                 element.attr("method", "post");
-                // Append a timestamp field to the url to prevent browser caching results
+
                 var separator = element.attr("action").indexOf('?')==-1 ? '?' : '&';
-                element.attr("action", element.attr("action") + separator + "_t=" + new Date().getTime());
+                var action = element.attr("action") + separator + "_t=" + new Date().getTime()
+                var csrfToken = $browser.cookies()['XSRF-TOKEN'];
+                if (csrfToken) {
+                    action = action + '&_csrf=' + csrfToken
+                }
+
+                // Append a timestamp field to the url to prevent browser caching results
+                element.attr("action", action);
                 element.attr("enctype", "multipart/form-data");
                 element.attr("encoding", "multipart/form-data");
 
