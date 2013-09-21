@@ -24,23 +24,23 @@
 //  });
 //
 angular.module('ngUpload', [])
-    .directive('uploadSubmit', ['$parse', function($parse) {
+.directive('uploadSubmit', ['$parse', function($parse) {
         // Utility function to get the closest parent element with a given tag
         function getParentNodeByTagName(element, tagName) {
-            element = angular.element(element);
-            var parent = element.parent();
-            tagName = tagName.toLowerCase();
+          element = angular.element(element);
+          var parent = element.parent();
+          tagName = tagName.toLowerCase();
 
-            if ( parent && parent[0].tagName.toLowerCase() === tagName ) {
-                return parent;
-            } else {
-                return !parent ? null : getParentNodeByTagName(parent, tagName);
-            }
+          if ( parent && parent[0].tagName.toLowerCase() === tagName ) {
+            return parent;
+          } else {
+            return !parent ? null : getParentNodeByTagName(parent, tagName);
+          }
         }
 
         return {
-            restrict: 'AC',
-            link: function(scope, element, attrs) {
+          restrict: 'AC',
+          link: function(scope, element, attrs) {
                 // Options (just 1 for now)
                 // Each option should be prefixed with 'upload-options-' or 'uploadOptions'
                 // {
@@ -56,7 +56,7 @@ angular.module('ngUpload', [])
                 if ( attrs.hasOwnProperty( "uploadOptionsConvertHidden" ) ) {
                     // Allow blank or true
                     options.convertHidden = attrs.uploadOptionsConvertHidden != "false";
-                }
+                  }
 
                 // submit the form
                 var form = getParentNodeByTagName(element, 'form');
@@ -65,18 +65,18 @@ angular.module('ngUpload', [])
                 var fn = $parse(attrs.uploadSubmit);
 
                 if (!angular.isFunction(fn)) {
-                    var message = "The expression on the ngUpload directive does not point to a valid function.";
-                    throw message + "\n";
+                  var message = "The expression on the ngUpload directive does not point to a valid function.";
+                  throw message + "\n";
                 }
 
                 element.bind('click', function($event) {
                     // prevent default behavior of click
                     if ($event) {
-                        $event.preventDefault = true;
+                      $event.preventDefault = true;
                     }
 
                     if (element.attr('disabled')) {
-                        return;
+                      return;
                     }
 
                     // create a new iframe
@@ -93,80 +93,80 @@ angular.module('ngUpload', [])
                         var iFrameDoc = nativeIframe.contentDocument || nativeIframe.contentWindow.document;
                         var content = iFrameDoc.body.innerHTML;
                         try {
-                            content = JSON.parse(content);
+                          content = JSON.parse(content);
                         } catch (e) {
-                            if (console) { console.log('WARN: XHR response is not valid json'); }
+                          if (console) { console.log('WARN: XHR response is not valid json'); }
                         }
                         // if outside a digest cycle, execute the upload response function in the active scope
                         // else execute the upload response function in the current digest
                         if (!scope.$$phase) {
-                            scope.$apply(function () {
-                                fn(scope, { content: content, completed: true });
-                            });
-                        } else {
+                          scope.$apply(function () {
                             fn(scope, { content: content, completed: true });
+                          });
+                        } else {
+                          fn(scope, { content: content, completed: true });
                         }
                         // remove iframe
                         if (content !== "") { // Fixes a bug in Google Chrome that dispose the iframe before content is ready.
-                            setTimeout(function () { iframe.remove(); }, 250);
+                          setTimeout(function () { iframe.remove(); }, 250);
                         }
                         element.attr('disabled', null);
                         element.attr('title', 'Click to start upload.');
-                    });
+                      });
 
-                    if (!scope.$$phase) {
-                        scope.$apply(function () {
-                            fn(scope, {content: "Please wait...", completed: false });
-                        });
-                    } else {
-                        fn(scope, {content: "Please wait...", completed: false });
-                    }
+if (!scope.$$phase) {
+  scope.$apply(function () {
+    fn(scope, {content: "Please wait...", completed: false });
+  });
+} else {
+  fn(scope, {content: "Please wait...", completed: false });
+}
 
-                    var enabled = true;
-                    if (!options.enableControls) {
+var enabled = true;
+if (!options.enableControls) {
                         // disable the submit control on click
                         element.attr('disabled', 'disabled');
                         enabled = false;
-                    }
+                      }
                     // why do we need this???
                     element.attr('title', (enabled ? '[ENABLED]: ' : '[DISABLED]: ') + 'Uploading, please wait...');
 
                     // If convertHidden option is enabled, set the value of hidden fields to the eval of the ng-model
                     if (options.convertHidden) {
-                        angular.forEach(form.find('input'), function(element) {
-                            element = angular.element(element);
-                            if (element.attr('ng-model') &&
-                                element.attr('type') &&
-                                element.attr('type') == 'hidden') {
-                                element.attr('value', scope.$eval(element.attr('ng-model')));
-                            }
-                        });
+                      angular.forEach(form.find('input'), function(element) {
+                        element = angular.element(element);
+                        if (element.attr('ng-model') &&
+                          element.attr('type') &&
+                          element.attr('type') == 'hidden') {
+                          element.attr('value', scope.$eval(element.attr('ng-model')));
+                      }
+                    });
                     }
 
                     form[0].submit();
 
-                }).attr('title', 'Click to start upload.');
-            }
-        };
-    }])
-    .directive('ngUpload', ['$parse', '$document', '$browser', function ($parse, $document, $browser) {
+                  }).attr('title', 'Click to start upload.');
+}
+};
+}])
+.directive('ngUpload', ['$parse', '$document', '$browser', function ($parse, $document, $browser) {
         // Utility function to get meta tag with a given name attribute
         function getMetaTagWithName(name) {
-            var head = $document.find('head');
-            var match;
+          var head = $document.find('head');
+          var match;
 
-            angular.forEach(head.find('meta'), function(element) {
-                if ( element.getAttribute('name') === name ) {
-                    match = element;
-                }
-            });
+          angular.forEach(head.find('meta'), function(element) {
+            if ( element.getAttribute('name') === name ) {
+              match = element;
+            }
+          });
 
-            return angular.element(match);
+          return angular.element(match);
         }
 
         return {
-            restrict: 'AC',
-            link: function (scope, element, attrs) {
+          restrict: 'AC',
+          link: function (scope, element, attrs) {
 
                 // Options (just 1 for now)
                 // Each option should be prefixed with 'upload-options-' or 'uploadOptions'
@@ -179,17 +179,18 @@ angular.module('ngUpload', [])
                 if ( attrs.hasOwnProperty( "uploadOptionsEnableRailsCsrf" ) ) {
                     // allow for blank or true
                     options.enableRailsCsrf = attrs.uploadOptionsEnableRailsCsrf != "false";
-                }
+                  }
 
-                element.attr("target", "upload_iframe");
-                element.attr("method", "post");
+                  element.attr("target", "upload_iframe");
+                  element.attr("method", "post");
 
-                var separator = element.attr("action").indexOf('?')==-1 ? '?' : '&';
-                var action = element.attr("action") + separator + "_t=" + new Date().getTime()
-                var csrfToken = $browser.cookies()['XSRF-TOKEN'];
-                if (csrfToken) {
-                    action = action + '&_csrf=' + csrfToken
-                }
+                  var separator = element.attr("action").indexOf('?')==-1 ? '?' : '&';
+                  var action = element.attr("action") + separator + "_t=" + new Date().getTime()
+                  var csrfToken = $browser.cookies()['XSRF-TOKEN'];
+
+                  if (csrfToken) {
+                    action = action + '&_csrf=' + encodeURIComponent(csrfToken);
+                  }
 
                 // Append a timestamp field to the url to prevent browser caching results
                 element.attr("action", action);
@@ -198,14 +199,14 @@ angular.module('ngUpload', [])
 
                 // If enabled, add csrf hidden input to form
                 if ( options.enableRailsCsrf ) {
-                    var input = angular.element("<input />");
-                        input.attr("class", "upload-csrf-token");
-                        input.attr("type", "hidden");
-                        input.attr("name", getMetaTagWithName('csrf-param').attr('content'));
-                        input.val(getMetaTagWithName('csrf-token').attr('content'));
+                  var input = angular.element("<input />");
+                  input.attr("class", "upload-csrf-token");
+                  input.attr("type", "hidden");
+                  input.attr("name", getMetaTagWithName('csrf-param').attr('content'));
+                  input.val(getMetaTagWithName('csrf-token').attr('content'));
 
-                    element.append(input);
+                  element.append(input);
                 }
-            }
-        };
-    }]);
+              }
+            };
+          }]);
